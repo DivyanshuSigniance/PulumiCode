@@ -2,31 +2,31 @@ import pulumi
 from pulumi_azure_native import resources, network, compute
 from pulumi_azure_native.resources import ResourceGroup
 
-# Create Azure Resource Group
+
 resource_group = ResourceGroup('rg')
 
-# Create Virtual Network
+
 virtual_network = network.VirtualNetwork('vnet',
     resource_group_name=resource_group.name,
     location=resource_group.location,
     address_space={'address_prefixes': ['10.0.0.0/16']}
 )
 
-# Create Public Subnet
+
 public_subnet = network.Subnet('public-subnet',
     resource_group_name=resource_group.name,
     virtual_network_name=virtual_network.name,
     address_prefix='10.0.1.0/24'
 )
 
-# Create Private Subnet
+
 private_subnet = network.Subnet('private-subnet',
     resource_group_name=resource_group.name,
     virtual_network_name=virtual_network.name,
     address_prefix='10.0.2.0/24'
 )
 
-# Create Public IP Address for WireGuard Server
+
 public_ip_wg = network.PublicIPAddress('publicip-wg',
     resource_group_name=resource_group.name,
     location=resource_group.location,
@@ -74,7 +74,7 @@ nsg_wg = network.NetworkSecurityGroup('nsg-wg',
 )
 
 
-# Create Network Interface for WireGuard Server
+
 network_interface_wg = network.NetworkInterface('nic-wg',
     resource_group_name=resource_group.name,
     location=resource_group.location,
@@ -85,7 +85,7 @@ network_interface_wg = network.NetworkInterface('nic-wg',
     }]
 )
 
-# Create Virtual Machine for WireGuard Server
+
 vm_wg = compute.VirtualMachine('vm-wg',
     resource_group_name=resource_group.name,
     location=resource_group.location,
@@ -108,13 +108,13 @@ vm_wg = compute.VirtualMachine('vm-wg',
     }
 )
 
-# Connect to the VM and execute the WireGuard installation script
+
 def execute_script_on_vm(vm: compute.VirtualMachine, script: str):
     pulumi.runtime.run_in_stack(lambda: pulumi.log.info(f"Executing script on VM '{vm.name}'"))
     pulumi.runtime.run_in_stack(lambda: pulumi.log.info(script))
     # Replace this part with your code to execute script on the VM
 
-# Install WireGuard
+
 wireguard_script = """#!/bin/bash
 # Install WireGuard
 sudo apt-get update && apt-get install -y wireguard
@@ -135,8 +135,6 @@ sudo systemctl enable wg-quick@wg0
 sudo systemctl start wg-quick@wg0
 """
 
-# Apply WireGuard installation script on the VM
 execute_script_on_vm(vm_wg, wireguard_script)
 
-# Output public IP of the WireGuard Server
 pulumi.export('public_ip_wg', public_ip_wg.ip_address)
