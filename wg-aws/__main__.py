@@ -29,7 +29,7 @@ wg_server_security_group_a = ec2.SecurityGroup("wg-server-sg-a",
         }
     ]
 )
-
+existing_eip_allocation_id = "35.167.23.102"
 
 wg_server_instance_a = ec2.Instance("wg-server-a",
     instance_type="t2.micro",
@@ -58,5 +58,10 @@ wg_server_instance_a = ec2.Instance("wg-server-a",
     sudo systemctl start wg-quick@wg0
     """)
 )
+eip_association = aws.ec2.EipAssociation("wg-server-eip-association-a",
+    instance_id=wg_server_instance_a.id,
+    allocation_id= "eipalloc-0ddc2b1a2cef8761e"
+)
+
 
 
