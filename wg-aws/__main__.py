@@ -47,10 +47,11 @@ wg_server_instance_a = ec2.Instance("wg-server-a",
     PrivateKey = 2KpsKhZ6/eQTArj1h3GnqrtO9LnDvm4aGc2imLNUQG8=
     Address = 172.31.49.96/32, 172.31.49.215/32
     ListenPort = 51820
-                                                                     
+
     [Peer]
     PublicKey = Y2yC6BlL5+F2xwFoWZLdNLKFhwwkwa7Hr3gNXLJFU3Q=
-    AllowedIPs =  10.0.1.13/32" > /etc/wireguard/wg0.conf
+    AllowedIPs =  10.0.1.13/32, 10.0.1.4/32, 10.0.2.4/32
+    Endpoint = 52.170.19.47:51820" > /etc/wireguard/wg0.conf
 
     # Start WireGuard
     sudo systemctl enable wg-quick@wg0

@@ -33,6 +33,47 @@ public_ip_wg = network.PublicIPAddress('publicip-wg',
     public_ip_allocation_method='Static'
 )
 
+nsg_wg = network.NetworkSecurityGroup('nsg-wg',
+    resource_group_name=resource_group.name,
+    location=resource_group.location,
+    security_rules=[
+        {
+            'name': 'WireGuardRule',
+            'direction': 'Inbound',
+            'access': 'Allow',
+            'protocol': 'Udp',
+            'source_port_range': '*',
+            'destination_port_range': '51820',
+            'source_address_prefix': '*',
+            'destination_address_prefix': '*',
+            'priority': 100
+        },
+        {
+            'name': 'SSHRule',
+            'direction': 'Inbound',
+            'access': 'Allow',
+            'protocol': 'Tcp',
+            'source_port_range': '*',
+            'destination_port_range': '22',
+            'source_address_prefix': '*',
+            'destination_address_prefix': '*',
+            'priority': 101
+        },
+        {
+            'name': 'AllowAllOutbound',
+            'direction': 'Outbound',
+            'access': 'Allow',
+            'protocol': '*',
+            'source_port_range': '*',
+            'destination_port_range': '*',
+            'source_address_prefix': '*',
+            'destination_address_prefix': '*',
+            'priority': 1000
+        }
+    ]
+)
+
+
 # Create Network Interface for WireGuard Server
 network_interface_wg = network.NetworkInterface('nic-wg',
     resource_group_name=resource_group.name,
@@ -61,7 +102,7 @@ vm_wg = compute.VirtualMachine('vm-wg',
         'image_reference': {
             'publisher': 'Canonical',
             'offer': 'UbuntuServer',
-            'sku': '16.04-LTS',
+            'sku': '18.04-LTS',
             'version': 'latest'
         }
     }
@@ -76,19 +117,18 @@ def execute_script_on_vm(vm: compute.VirtualMachine, script: str):
 # Install WireGuard
 wireguard_script = """#!/bin/bash
 # Install WireGuard
-apt-get update && apt-get install -y wireguard
+sudo apt-get update && apt-get install -y wireguard
 sudo sysctl -w net.ipv4.ip_forward=1 
 
 # Configure WireGuard
 echo "[Interface]
 PrivateKey = qBJ0mKuFN6nGtmE0B+QcEYzKPO805ZlUXEwgfWoerno=
-Address = 10.0.1.13/32
+Address = 10.0.2.4/32
 ListenPort = 51820
-                                                                     
 [Peer]
 PublicKey = izcycGRg+9zVoF9fSzjYaKwjzc7ESWTmKuUXuZ7ZZjM=
-AllowedIPs = 10.0.1.13/32, 172.31.49.96/32, 172.31.49.215/32
-Endpoint = 44.203.17.253:51820" > /etc/wireguard/wg0.conf
+AllowedIPs = 10.0.2.4/32, 172.31.49.96/32, 172.31.49.215/32, 172.31.14.237/32
+Endpoint = 3.238.8.173:51820" > /etc/wireguard/wg0.conf
 
 # Start WireGuard
 sudo systemctl enable wg-quick@wg0
