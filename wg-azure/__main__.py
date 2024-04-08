@@ -5,9 +5,9 @@ from pulumi_azure_native.resources import ResourceGroup
 
 resource_group = ResourceGroup('rg')
 
-
+name,
 virtual_network = network.VirtualNetwork('vnet',
-    resource_group_name=resource_group.name,
+    resource_group_name=resource_group.
     location=resource_group.location,
     address_space={'address_prefixes': ['10.0.0.0/16']}
 )
@@ -118,17 +118,22 @@ def execute_script_on_vm(vm: compute.VirtualMachine, script: str):
 wireguard_script = """#!/bin/bash
 # Install WireGuard
 sudo apt-get update && apt-get install -y wireguard
+sudo apt  install awscli -y
 sudo sysctl -w net.ipv4.ip_forward=1 
 
 # Configure WireGuard
 echo "[Interface]
 PrivateKey = qBJ0mKuFN6nGtmE0B+QcEYzKPO805ZlUXEwgfWoerno=
-Address = 10.0.2.4/32
+Address = 10.0.2.5/32, 10.92.112.1/32, 10.110.174.125/32, 192.168.49.5/32, 192.168.49.7/32
 ListenPort = 51820
 [Peer]
+PublicKey = aEaH+9SnjdrgjqeFcBnpb5fyGbqREBhFbMpf1tJQHV0=
+AllowedIPs = 10.0.0.0/16
+Endpoint = 115.110.201.147:51820
+[Peer]
 PublicKey = izcycGRg+9zVoF9fSzjYaKwjzc7ESWTmKuUXuZ7ZZjM=
-AllowedIPs = 10.0.2.4/32, 172.31.49.96/32, 172.31.49.215/32, 172.31.14.237/32
-Endpoint = 3.238.8.173:51820" > /etc/wireguard/wg0.conf
+AllowedIPs = 192.168.49.0/24
+Endpoint = 52.6.54.217:51820" > /etc/wireguard/wg0.conf
 
 # Start WireGuard
 sudo systemctl enable wg-quick@wg0

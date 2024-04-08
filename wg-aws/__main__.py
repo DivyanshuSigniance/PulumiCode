@@ -4,7 +4,7 @@ import pulumi_aws as aws
 
 
 wg_server_security_group_a = ec2.SecurityGroup("wg-server-sg-a",
-    vpc_id = "vpc-04a2c766b89e457e8",
+    vpc_id = "vpc-023ba954d5f915fcb",
     description="Allow inbound WireGuard traffic",
     ingress=[
         {
@@ -29,14 +29,17 @@ wg_server_security_group_a = ec2.SecurityGroup("wg-server-sg-a",
         }
     ]
 )
-existing_eip_allocation_id = "35.167.23.102"
+existing_eip_allocation_id = "52.6.54.217"
 
 wg_server_instance_a = ec2.Instance("wg-server-a",
-    instance_type="t2.micro",
+    instance_type="t3.micro",
     vpc_security_group_ids=[wg_server_security_group_a.id],
-    subnet_id = " subnet-0001a995c2b8a486c",
+    subnet_id = "subnet-006076103fef351f1",
     ami="ami-080e1f13689e07408",
-    key_name="pulumi",
+    key_name="revdau-pulumi-key",
+    tags={
+        "Name": "WireguardVPN"  
+    },
     user_data=pulumi.Output.all(wg_server_security_group_a.id).apply(lambda args: f"""#!/bin/bash
     # Install WireGuard
     apt-get update && apt-get install -y wireguard
@@ -45,13 +48,18 @@ wg_server_instance_a = ec2.Instance("wg-server-a",
     # Configure WireGuard
     echo "[Interface]
     PrivateKey = 2KpsKhZ6/eQTArj1h3GnqrtO9LnDvm4aGc2imLNUQG8=
-    Address = 172.31.49.96/32, 172.31.49.215/32
+    Address = 192.168.49.14/32,  10.92.112.1/32, 10.110.174.125/32, 10.0.2.5/32, 192.168.49.5/32, 192.168.49.7/32
     ListenPort = 51820
 
     [Peer]
-    PublicKey = Y2yC6BlL5+F2xwFoWZLdNLKFhwwkwa7Hr3gNXLJFU3Q=
-    AllowedIPs =  10.0.1.13/32, 10.0.1.4/32, 10.0.2.4/32
-    Endpoint = 52.170.19.47:51820" > /etc/wireguard/wg0.conf
+    PublicKey = aEaH+9SnjdrgjqeFcBnpb5fyGbqREBhFbMpf1tJQHV0=
+    AllowedIPs =  192.168.49.0/24
+    Endpoint = 115.110.201.147:51820
+                                                                     
+    [Peer]
+    PublicKey = izcycGRg+9zVoF9fSzjYaKwjzc7ESWTmKuUXuZ7ZZjM=
+    AllowedIPs = 10.0.0.0/16
+    Endpoint = 4.227.169.126:51820" > /etc/wireguard/wg0.conf
 
     # Start WireGuard
     sudo systemctl enable wg-quick@wg0
@@ -60,8 +68,7 @@ wg_server_instance_a = ec2.Instance("wg-server-a",
 )
 eip_association = aws.ec2.EipAssociation("wg-server-eip-association-a",
     instance_id=wg_server_instance_a.id,
-    allocation_id= "eipalloc-0ddc2b1a2cef8761e"
+    allocation_id= "eipalloc-06373163bff4be5a5"
 )
-
 
 
